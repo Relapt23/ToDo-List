@@ -1,6 +1,4 @@
-from fastapi.responses import HTMLResponse
 from fastapi import FastAPI, status, Depends
-from fastapi.requests import Request
 from sqlalchemy.orm import Session
 
 from models import sessionmaker, create_engine, Base, ToDo, select, Tasks, InsertToDo, update, delete, CustomException, \
