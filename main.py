@@ -1,9 +1,12 @@
 from fastapi.responses import HTMLResponse
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, Depends
 from fastapi.requests import Request
-from models import sessionmaker, create_engine, Base, ToDo, select, Tasks, InsertToDo, update, delete, CustomException
+from sqlalchemy.orm import Session
+
+from models import sessionmaker, create_engine, Base, ToDo, select, Tasks, InsertToDo, update, delete, CustomException, \
+    Status
 from fastapi.templating import Jinja2Templates
-from typing import List
+from typing import List, Optional
 
 engine = create_engine("sqlite:///database.db", echo=True)
 sess = sessionmaker(engine)
@@ -16,50 +19,54 @@ templates = Jinja2Templates(directory="templates")
 app = FastAPI()
 
 
-@app.get("/tasks", response_model=List[ToDo])
-async def get_tasks():
+def get_session():
     with sess() as session:
+        yield session
+
+
+@app.get("/tasks", response_model=List[ToDo])
+async def get_tasks(filterStatus: Optional[Status] = None, session: Session = Depends(get_session)):
+    if filterStatus == None:
         tasks = session.execute(select(Tasks)).scalars().all()
+    else:
+        tasks = session.execute(select(Tasks).where(filterStatus.value == Tasks.status)).scalars().all()
     return tasks
 
 
 @app.post("/tasks")
-async def add_task(task: InsertToDo):
-    with sess() as session:
-        new_task = Tasks(title=task.title, description=task.description, status='todo')
-        session.add(new_task)
-        session.commit()
+async def add_task(task: InsertToDo, session: Session = Depends(get_session)):
+    new_task = Tasks(title=task.title, description=task.description, status='todo')
+    session.add(new_task)
+    session.commit()
+    session.refresh(new_task)
     return new_task
 
 
 @app.get("/tasks/{id}/")
-async def get_current_task(id: int):
-    with sess() as session:
-        current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
-        if not current_task:
-            raise CustomException(detail="Задачи с таким id не найдено", status_code=404)
-        return current_task
+async def get_current_task(id: int, session: Session = Depends(get_session)):
+    current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
+    if not current_task:
+        raise CustomException(detail="Not-found", status_code=404)
+    return current_task
 
 
 @app.put("/tasks/{id}/")
-async def update_task(id: int, task: ToDo):
-    with sess() as session:
-        current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
-        if not current_task:
-            raise CustomException(detail="Задачи с таким id не найдено", status_code=404)
-        session.execute(update(Tasks).where(id == Tasks.id).values(
-            title=task.title, description=task.description, status=task.status))
-        session.commit()
-        current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
+async def update_task(id: int, task: ToDo, session: Session = Depends(get_session)):
+    current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
+    if not current_task:
+        raise CustomException(detail="Not-found", status_code=404)
+    session.execute(update(Tasks).where(id == Tasks.id).values(
+        title=task.title, description=task.description, status=task.status))
+    session.commit()
+    session.refresh(current_task)
     return current_task
 
 
 @app.delete("/tasks/{id}/")
-async def delete_task(id: int):
-    with sess() as session:
-        current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
-        if not current_task:
-            raise CustomException(detail="Задачи с таким id не найдено", status_code=404)
-        session.execute(delete(Tasks).where(id == Tasks.id))
-        session.commit()
-    return current_task
+async def delete_task(id: int, session: Session = Depends(get_session)):
+    current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
+    if not current_task:
+        raise CustomException(detail="Not-found", status_code=404)
+    session.execute(delete(Tasks).where(id == Tasks.id))
+    session.commit()
+    return {"ok": True}
