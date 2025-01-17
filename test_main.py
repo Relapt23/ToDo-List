@@ -5,7 +5,7 @@ from models import Base
 from main import app, get_session
 
 
-def test_create_db():
+def create_db():
     engine = create_engine(
         "sqlite:///testing.db", connect_args={"check_same_thread": False}
     )
@@ -23,10 +23,8 @@ client = TestClient(app)
 
 
 def test_create_task():
-    test_create_db()
-    response = client.post("/tasks",
-                           json={"title": "Пропылесосить", "description": "Пропылесосить кухню и коридор"}
-                           )
+    create_db()
+    response = client.post("/tasks", json={"title": "Пропылесосить", "description": "Пропылесосить кухню и коридор"})
     data = response.json()
     assert response.status_code == 200
     assert data["title"] == "Пропылесосить"
@@ -36,7 +34,7 @@ def test_create_task():
 
 
 def test_get_task():
-    test_create_db()
+    create_db()
     response = client.post("/tasks", json={"title": "Сделать домашнее задание", "description": "Написать сочинение"})
     data = response.json()
     id = data["id"]
@@ -50,7 +48,7 @@ def test_get_task():
 
 
 def test_get_filtered_tasks():
-    test_create_db()
+    create_db()
     response = client.post("/tasks", json={"title": "Помыть посуду", "description": "Помыть посуду и выкинуть мусор"})
     data = response.json()
     id = data["id"]
