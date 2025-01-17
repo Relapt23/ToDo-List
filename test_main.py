@@ -52,9 +52,14 @@ def test_get_filtered_tasks():
     response = client.post("/tasks", json={"title": "Помыть посуду", "description": "Помыть посуду и выкинуть мусор"})
     data = response.json()
     id = data["id"]
-    client.put("/tasks/"f"{id}",
-               json={"title": "Помыть посуду", "description": "Помыть посуду и выкинуть мусор",
-                     "status": "done"})
+    client.put(
+        "/tasks/"f"{id}",
+        json={
+            "title": "Помыть посуду",
+            "description": "Помыть посуду и выкинуть мусор",
+            "status": "done"
+        }
+    )
     response = client.get("/tasks?filterStatus=done")
     assert response.status_code == 200
     assert {"title": "Помыть посуду", "description": "Помыть посуду и выкинуть мусор",
