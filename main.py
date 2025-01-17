@@ -33,7 +33,7 @@ async def get_tasks(filterStatus: Optional[Status] = None, session: Session = De
 
 @app.post("/tasks")
 async def add_task(task: InsertToDo, session: Session = Depends(get_session)):
-    new_task = Tasks(title=task.title, description=task.description, status='todo')
+    new_task = Tasks(title=task.title, description=task.description, status=Status.todo.value)
     session.add(new_task)
     session.commit()
     session.refresh(new_task)
@@ -44,7 +44,7 @@ async def add_task(task: InsertToDo, session: Session = Depends(get_session)):
 async def get_current_task(id: int, session: Session = Depends(get_session)):
     current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
     if not current_task:
-        raise CustomException(detail="Not-found", status_code=404)
+        raise CustomException(detail="not_found", status_code=404)
     return current_task
 
 
@@ -52,7 +52,7 @@ async def get_current_task(id: int, session: Session = Depends(get_session)):
 async def update_task(id: int, task: ToDo, session: Session = Depends(get_session)):
     current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
     if not current_task:
-        raise CustomException(detail="Not-found", status_code=404)
+        raise CustomException(detail="not_found", status_code=404)
     session.execute(update(Tasks).where(id == Tasks.id).values(
         title=task.title, description=task.description, status=task.status))
     session.commit()
@@ -64,7 +64,7 @@ async def update_task(id: int, task: ToDo, session: Session = Depends(get_sessio
 async def delete_task(id: int, session: Session = Depends(get_session)):
     current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
     if not current_task:
-        raise CustomException(detail="Not-found", status_code=404)
+        raise CustomException(detail="not_found", status_code=404)
     session.execute(delete(Tasks).where(id == Tasks.id))
     session.commit()
     return {"ok": True}
