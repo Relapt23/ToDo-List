@@ -1,4 +1,6 @@
 /.venv
 /.idea
 /__pycache__
-/database.db
+/api/database.db
+/api/__pycache__
+/site/__pycache__
