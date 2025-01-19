@@ -11,16 +11,30 @@ class InsertToDo(BaseModel):
     description: str
 
 
+class UpdateTask(BaseModel):
+    title: str
+    description: str
+    status: str
+
+
 class ToDo(BaseModel):
     title: str
     description: str
     status: str
+    id: int
 
 
 class Status(Enum):
     todo = "todo"
     in_progress = "in_progress"
     done = "done"
+
+
+class Filter(Enum):
+    todo = "todo"
+    in_progress = "in_progress"
+    done = "done"
+    all = "all"
 
 
 class CustomException(HTTPException):

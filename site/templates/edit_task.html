@@ -5,11 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Редактировать задачу</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-container {
+            max-width: 600px; /* Устанавливаем максимальную ширину формы */
+            margin: 0 auto; /* Центрируем форму */
+        }
+    </style>
 </head>
 <body class="bg-light">
 <div class="container mt-5">
     <h1 class="text-center mb-4">Редактировать задачу</h1>
-    <form action="/edit/{{ task.id }}" method="post" class="shadow p-4 bg-white rounded">
+    <!-- Форма обновления и удаления задачи -->
+    <form action="/edit/{{ task.id }}" method="post" class="shadow p-4 bg-white rounded form-container">
         <div class="mb-3">
             <label for="title" class="form-label">Название</label>
             <input type="text" id="title" name="title" class="form-control" value="{{ task.title }}" readonly>
@@ -20,13 +27,22 @@
         </div>
         <div class="mb-3">
             <label for="status" class="form-label">Статус</label>
-            <textarea id="status" name="status" class="form-control">{{ task.status }}</textarea>
+            <select id="status" name="status" class="form-control">
+                <option value="todo" {% if task.status == 'todo' %}selected{% endif %}>Todo</option>
+                <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                <option value="done" {% if task.status == 'done' %}selected{% endif %}>Done</option>
+            </select>
         </div>
         <div class="d-flex justify-content-between">
-            <button type="submit" class="btn btn-success">Сохранить</button>
-            <a href="/delete/{{ task.id }}" class="btn btn-danger">Удалить</a>
+            <!-- Кнопка обновить -->
+            <button type="submit" class="btn btn-primary">Обновить</button>
+            <!-- Кнопка удалить -->
+            <button type="submit" formaction="/delete/{{ task.id }}" class="btn btn-danger">Удалить</button>
         </div>
     </form>
 </div>
 </body>
 </html>
+
+
+

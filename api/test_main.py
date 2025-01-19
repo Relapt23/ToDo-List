@@ -60,7 +60,7 @@ def test_get_filtered_tasks():
             "status": "done"
         }
     )
-    response = client.get("/tasks?filterStatus=done")
+    response = client.get("/tasks?filter_status=done")
     assert response.status_code == 200
     assert {"title": "Помыть посуду", "description": "Помыть посуду и выкинуть мусор",
             "status": "done"}

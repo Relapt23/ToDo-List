@@ -2,7 +2,7 @@ from fastapi import FastAPI, status, Depends
 from sqlalchemy.orm import Session
 
 from models import sessionmaker, create_engine, Base, ToDo, select, Tasks, InsertToDo, update, delete, CustomException, \
-    Status
+    Filter, UpdateTask, Status
 from fastapi.templating import Jinja2Templates
 from typing import List, Optional
 
@@ -23,11 +23,11 @@ def get_session():
 
 
 @app.get("/tasks", response_model=List[ToDo])
-async def get_tasks(filterStatus: Optional[Status] = None, session: Session = Depends(get_session)):
-    if filterStatus == None:
+async def get_tasks(filter_status: Optional[Filter] = None, session: Session = Depends(get_session)):
+    if filter_status == None or filter_status.value == "all":
         tasks = session.execute(select(Tasks)).scalars().all()
     else:
-        tasks = session.execute(select(Tasks).where(filterStatus.value == Tasks.status)).scalars().all()
+        tasks = session.execute(select(Tasks).where(filter_status.value == Tasks.status)).scalars().all()
     return tasks
 
 
@@ -49,7 +49,7 @@ async def get_current_task(id: int, session: Session = Depends(get_session)):
 
 
 @app.put("/tasks/{id}/")
-async def update_task(id: int, task: ToDo, session: Session = Depends(get_session)):
+async def update_task(id: int, task: UpdateTask, session: Session = Depends(get_session)):
     current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
     if not current_task:
         raise CustomException(detail="not_found", status_code=404)

@@ -2,9 +2,10 @@ from fastapi import FastAPI, Depends, status
 from fastapi.templating import Jinja2Templates
 import requests
 import json
-from models import ToDo, UpdateTask
+from models import ToDo, UpdateTask, Filter
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
+from typing import Optional
 
 app = FastAPI()
 
@@ -12,11 +13,14 @@ templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/")
-async def get_todo(request: Request):
-    response = requests.get('http://api:8000/tasks')
+async def get_todo(request: Request, filter_status: Filter = Filter.all):
+    if filter_status != None or filter_status.value == "all":
+        response = requests.get(f'http://api:8000/tasks?filter_status={filter_status.value}')
+    else:
+        response = requests.get('http://api:8000/tasks')
     tasks_list = json.loads(response.content.decode('utf-8'))
-
-    return templates.TemplateResponse(name="tasks_list.html", context={"request": request, "tasks": tasks_list})
+    return templates.TemplateResponse(name="tasks_list.html", context={"request": request, "tasks": tasks_list,
+                                                                       "filter": filter_status.display_name()})
 
 
 @app.post("/")

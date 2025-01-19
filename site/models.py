@@ -35,3 +35,19 @@ class Status(Enum):
     todo = "todo"
     in_progress = "in_progress"
     done = "done"
+
+
+class Filter(Enum):
+    todo = "todo"
+    in_progress = "in_progress"
+    done = "done"
+    all = "all"
+
+    def display_name(self):
+        filter_to_string = {
+            Filter.all: "Все",
+            Filter.todo: "ToDo",
+            Filter.in_progress: "In Progress",
+            Filter.done: "Done"
+        }
+        return filter_to_string[self]
