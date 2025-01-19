@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy import select, delete, update, create_engine
 from models.db_models import Base, Tasks
-from models.models import Task, InsertTask, CustomException, Filter, UpdateTask, Status
+from models.models import Task, InsertTask, CustomException, Filter, UpdateTask, Status, OkResponse
 from fastapi.templating import Jinja2Templates
 from typing import List
 
@@ -22,8 +22,8 @@ def get_session():
         yield session
 
 
-@app.get("/tasks", response_model=List[Task])
-async def get_tasks(filter_status: Filter = Filter.all, session: Session = Depends(get_session)):
+@app.get("/tasks")
+async def get_tasks(filter_status: Filter = Filter.all, session: Session = Depends(get_session)) -> List[Task]:
     if filter_status.value == "all":
         tasks = session.execute(select(Tasks)).scalars().all()
     else:
@@ -32,7 +32,7 @@ async def get_tasks(filter_status: Filter = Filter.all, session: Session = Depen
 
 
 @app.post("/tasks")
-async def add_task(task: InsertTask, session: Session = Depends(get_session)):
+async def add_task(task: InsertTask, session: Session = Depends(get_session)) -> Task:
     new_task = Tasks(title=task.title, description=task.description, status=Status.todo.value)
     session.add(new_task)
     session.commit()
@@ -41,7 +41,7 @@ async def add_task(task: InsertTask, session: Session = Depends(get_session)):
 
 
 @app.get("/tasks/{id}/")
-async def get_current_task(id: int, session: Session = Depends(get_session)):
+async def get_current_task(id: int, session: Session = Depends(get_session)) -> Task:
     current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
     if not current_task:
         raise CustomException(detail="not_found", status_code=404)
@@ -49,7 +49,7 @@ async def get_current_task(id: int, session: Session = Depends(get_session)):
 
 
 @app.put("/tasks/{id}/")
-async def update_task(id: int, task: UpdateTask, session: Session = Depends(get_session)):
+async def update_task(id: int, task: UpdateTask, session: Session = Depends(get_session)) -> Task:
     current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
     if not current_task:
         raise CustomException(detail="not_found", status_code=404)
@@ -61,10 +61,10 @@ async def update_task(id: int, task: UpdateTask, session: Session = Depends(get_
 
 
 @app.delete("/tasks/{id}/")
-async def delete_task(id: int, session: Session = Depends(get_session)):
+async def delete_task(id: int, session: Session = Depends(get_session)) -> OkResponse:
     current_task = session.execute(select(Tasks).where(id == Tasks.id)).scalar_one_or_none()
     if not current_task:
         raise CustomException(detail="not_found", status_code=404)
     session.execute(delete(Tasks).where(id == Tasks.id))
     session.commit()
-    return {"ok": True}
+    return OkResponse(ok=True)

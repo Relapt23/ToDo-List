@@ -21,6 +21,10 @@ class Task(BaseModel):
     id: int
 
 
+class OkResponse(BaseModel):
+    ok: bool
+
+
 class Status(Enum):
     todo = "todo"
     in_progress = "in_progress"
