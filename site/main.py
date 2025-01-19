@@ -13,7 +13,7 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/")
 async def get_tasks(request: Request, filter_status: Filter = Filter.all):
-    if filter_status.value == "all":
+    if filter_status.value != "all":
         response = requests.get(f'http://api:8000/tasks?filter_status={filter_status.value}')
     else:
         response = requests.get('http://api:8000/tasks')

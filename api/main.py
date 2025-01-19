@@ -6,7 +6,7 @@ from models.models import Task, InsertTask, CustomException, Filter, UpdateTask,
 from fastapi.templating import Jinja2Templates
 from typing import List
 
-engine = create_engine("sqlite:///database.db", echo=True)
+engine = create_engine("postgresql://user:password@postgres:5432/tasks_db", echo=True)
 sess = sessionmaker(engine)
 engine.echo = False
 Base.metadata.create_all(engine)
