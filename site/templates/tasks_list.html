@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todo List</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
             background-color: #f8f9fa;
@@ -22,6 +23,32 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .status.todo {
+            background-color: #ffc107; /* Желтый для todo */
+            color: #fff;
+        }
+        .status.in_progress {
+            background-color: #0d6efd; /* Синий для in_progress */
+            color: #fff;
+        }
+        .status.done {
+            background-color: #198754; /* Зеленый для done */
+            color: #fff;
+        }
+        .filter-button {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .filter-button i {
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -47,6 +74,21 @@
         </form>
     </div>
 
+    <!-- Иконка для фильтрации задач с отступом -->
+    <div class="d-flex justify-content-end mt-4">
+        <div class="filter-button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-filter"></i>
+            <span id="status-label">Статус: {{ filter }}</span>
+        </div>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="?filter_status=all" onclick="updateStatusLabel('Все')">Все</a></li>
+            <li><a class="dropdown-item" href="?filter_status=todo" onclick="updateStatusLabel('Todo')">Todo</a></li>
+            <li><a class="dropdown-item" href="?filter_status=in_progress" onclick="updateStatusLabel('In Progress')">In
+                Progress</a></li>
+            <li><a class="dropdown-item" href="?filter_status=done" onclick="updateStatusLabel('Done')">Done</a></li>
+        </ul>
+    </div>
+
     <!-- Список задач -->
     <div class="task-list">
         <h3 class="text-center">Список задач</h3>
@@ -58,13 +100,18 @@
                     <h5 class="mb-1">{{ task.title }}</h5>
                     <p class="mb-0 text-muted">{{ task.description }}</p>
                 </div>
-                <div class="btn-group">
-                    <form action="/edit/{{ task.id }}" method="get">
-                        <button type="submit" class="btn btn-primary btn-sm">Редактировать</button>
-                    </form>
-                    <form action="/delete/{{ task.id }}" method="post">
-                        <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
-                    </form>
+                <div class="d-flex justify-content-between align-items-center">
+                    <!-- Статус задачи -->
+                    <span class="status {{ task.status }}">{{ task.status | capitalize }}</span>
+
+                    <div class="btn-group ms-2">
+                        <form action="/edit/{{ task.id }}" method="get">
+                            <button type="submit" class="btn btn-primary btn-sm">Редактировать</button>
+                        </form>
+                        <form action="/delete/{{ task.id }}" method="post">
+                            <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                        </form>
+                    </div>
                 </div>
             </li>
             {% endfor %}
@@ -76,5 +123,7 @@
         {% endif %}
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
