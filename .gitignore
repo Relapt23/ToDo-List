@@ -4,3 +4,5 @@
 /api/database.db
 /api/__pycache__
 /site/__pycache__
+/api/tests/testing.db
+/api/models/__pycache__

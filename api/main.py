@@ -1,10 +1,10 @@
-from fastapi import FastAPI, status, Depends
-from sqlalchemy.orm import Session
-
-from models import sessionmaker, create_engine, Base, ToDo, select, Tasks, InsertToDo, update, delete, CustomException, \
-    Filter, UpdateTask, Status
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import select, delete, update, create_engine
+from models.db_models import Base, Tasks
+from models.models import Task, InsertTask, CustomException, Filter, UpdateTask, Status
 from fastapi.templating import Jinja2Templates
-from typing import List, Optional
+from typing import List
 
 engine = create_engine("sqlite:///database.db", echo=True)
 sess = sessionmaker(engine)
@@ -22,9 +22,9 @@ def get_session():
         yield session
 
 
-@app.get("/tasks", response_model=List[ToDo])
-async def get_tasks(filter_status: Optional[Filter] = None, session: Session = Depends(get_session)):
-    if filter_status == None or filter_status.value == "all":
+@app.get("/tasks", response_model=List[Task])
+async def get_tasks(filter_status: Filter = Filter.all, session: Session = Depends(get_session)):
+    if filter_status.value == "all":
         tasks = session.execute(select(Tasks)).scalars().all()
     else:
         tasks = session.execute(select(Tasks).where(filter_status.value == Tasks.status)).scalars().all()
@@ -32,7 +32,7 @@ async def get_tasks(filter_status: Optional[Filter] = None, session: Session = D
 
 
 @app.post("/tasks")
-async def add_task(task: InsertToDo, session: Session = Depends(get_session)):
+async def add_task(task: InsertTask, session: Session = Depends(get_session)):
     new_task = Tasks(title=task.title, description=task.description, status=Status.todo.value)
     session.add(new_task)
     session.commit()

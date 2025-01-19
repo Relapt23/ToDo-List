@@ -3,7 +3,7 @@ from fastapi import Form
 from enum import Enum
 
 
-class ToDo(BaseModel):
+class CreateTask(BaseModel):
     title: str
     description: str
 
