@@ -15,7 +15,6 @@ class ToDo(BaseModel):
     title: str
     description: str
     status: str
-    id: int
 
 
 class Status(Enum):

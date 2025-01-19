@@ -33,8 +33,9 @@ async def delete_todo(task_id: int):
 
 @app.post("/edit/{task_id}")
 async def post_todo(task_id: int, todo: UpdateTask = Depends(UpdateTask.as_form)):
-    requests.put(f'http://api:8000/tasks/{task_id}/',
-                 json={"title": todo.title, "description": todo.description, "status": todo.status})
+    response = requests.put(f'http://api:8000/tasks/{task_id}/',
+                            json={"title": todo.title, "description": todo.description, "status": todo.status})
+    print(json.loads(response.content.decode('utf-8')))
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 
