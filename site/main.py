@@ -12,12 +12,17 @@ templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/")
-async def get_todo(request: Request, filter_status: Filter = Filter.all):
-    if filter_status != None or filter_status.value == "all":
+async def get_tasks(request: Request, filter_status: Filter = Filter.all):
+    if filter_status.value == "all":
         response = requests.get(f'http://api:8000/tasks?filter_status={filter_status.value}')
     else:
         response = requests.get('http://api:8000/tasks')
-    tasks_list = json.loads(response.content.decode('utf-8'))
+
+    if response.status_code == 200:
+        tasks_list = json.loads(response.content.decode('utf-8'))
+    else:
+        tasks_list = []
+
     return templates.TemplateResponse(
         name="tasks_list.html",
         context={
@@ -29,7 +34,7 @@ async def get_todo(request: Request, filter_status: Filter = Filter.all):
 
 
 @app.post("/")
-async def post_todo(todo: CreateTask = Depends(CreateTask.as_form)):
+async def post_task(todo: CreateTask = Depends(CreateTask.as_form)):
     requests.post(
         'http://api:8000/tasks',
         json={
@@ -41,14 +46,14 @@ async def post_todo(todo: CreateTask = Depends(CreateTask.as_form)):
 
 
 @app.post("/delete/{task_id}")
-async def delete_todo(task_id: int):
+async def delete_task(task_id: int):
     requests.delete(f'http://api:8000/tasks/{task_id}/')
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @app.post("/edit/{task_id}")
-async def post_todo(task_id: int, todo: UpdateTask = Depends(UpdateTask.as_form)):
-    response = requests.put(
+async def edit_task(task_id: int, todo: UpdateTask = Depends(UpdateTask.as_form)):
+    requests.put(
         f'http://api:8000/tasks/{task_id}/',
         json={
             "title": todo.title,
@@ -60,7 +65,7 @@ async def post_todo(task_id: int, todo: UpdateTask = Depends(UpdateTask.as_form)
 
 
 @app.get("/edit/{task_id}")
-async def get_todo(task_id: int, request: Request):
+async def edit_task(task_id: int, request: Request):
     response = requests.get(f'http://api:8000/tasks/{task_id}/')
     task = json.loads(response.content.decode('utf-8'))
     return templates.TemplateResponse(name="edit_task.html", context={"request": request, "task": task})
