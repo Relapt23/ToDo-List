@@ -1,8 +1,8 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from models import Base
-from main import app, get_session
+from api.models import Base
+from api.main import app, get_session
 
 
 def create_db():
@@ -52,9 +52,14 @@ def test_get_filtered_tasks():
     response = client.post("/tasks", json={"title": "Помыть посуду", "description": "Помыть посуду и выкинуть мусор"})
     data = response.json()
     id = data["id"]
-    client.put("/tasks/"f"{id}",
-               json={"title": "Помыть посуду", "description": "Помыть посуду и выкинуть мусор",
-                     "status": "done"})
+    client.put(
+        "/tasks/"f"{id}",
+        json={
+            "title": "Помыть посуду",
+            "description": "Помыть посуду и выкинуть мусор",
+            "status": "done"
+        }
+    )
     response = client.get("/tasks?filterStatus=done")
     assert response.status_code == 200
     assert {"title": "Помыть посуду", "description": "Помыть посуду и выкинуть мусор",
