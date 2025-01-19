@@ -1,10 +1,12 @@
-/.venv
-/.idea
-/__pycache__
+.venv/
+**/__pycache__/
+.pytest_cache/
 
-/api/database.db
-/api/__pycache__
-/api/tests/testing.db
-/api/models/__pycache__
+.DS_Store
 
-/site/__pycache__
+.idea/
+.vscode/
+
+*.sqlite3
+*.db
+
